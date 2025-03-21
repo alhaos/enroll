@@ -1,0 +1,9 @@
+# enroll config file
+
+# Logging configuration
+logging:
+  directory: log
+  filename: enroll.log
+
+webServer:
+  address: ":8080"
