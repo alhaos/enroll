@@ -16,4 +16,5 @@ func New(logger *slog.Logger) *Handler {
 
 func (h *Handler) IndexGetHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.gohtml", nil)
+	h.logger.Info("index.gohtml visited")
 }
