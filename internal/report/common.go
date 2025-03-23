@@ -6,27 +6,11 @@ import (
 
 const pixelToMM = 0.3528
 
+// Element interface
 type Element interface {
 	AddElement(Element) error
 	Render(doc *fpdf.Fpdf, position Position) error
 	ChildElements() []Element
-}
-
-func NewLogicalBox() *LogicalBox {
-	return &LogicalBox{}
-}
-
-type LogicalBox struct {
-	RectangleElement
-}
-
-func (br *LogicalBox) AddElement(element Element) error {
-	br.Elements = append(br.Elements, element)
-	return nil
-}
-
-func (br *LogicalBox) ChildElements() []Element {
-	return br.Elements
 }
 
 // Font this structure contains information about font
@@ -44,17 +28,58 @@ type Color struct {
 	Blue  int
 }
 
+// Position ...
+type Position struct {
+	Offset
+	Size
+}
+
+// Offset contains the coordinates of the offset relative to the beginning of the document
+type Offset struct {
+	X float64
+	Y float64
+}
+
+// Size contains the size of rectangle object
+type Size struct {
+	Width  float64
+	Height float64
+}
+
+// NewLogicalBox create new logical box
+func NewLogicalBox() *LogicalBox {
+	return &LogicalBox{}
+}
+
+// LogicalBox struct
+type LogicalBox struct {
+	RectangleElement
+}
+
+// AddElement add child element to logical box
+func (br *LogicalBox) AddElement(element Element) error {
+	br.Elements = append(br.Elements, element)
+	return nil
+}
+
+// ChildElements return child elements
+func (br *LogicalBox) ChildElements() []Element {
+	return br.Elements
+}
+
 // TitledBoxOptions ...
 type TitledBoxOptions struct {
 	Title string
 	Font  Font
 }
 
+// TitledBox struct
 type TitledBox struct {
 	RectangleElement
 	Options TitledBoxOptions
 }
 
+// NewTitledBox constructor for title box object
 func NewTitledBox(titledBoxOptions TitledBoxOptions, position Position) *TitledBox {
 	return &TitledBox{
 		Options: titledBoxOptions,
@@ -67,6 +92,7 @@ func NewTitledBox(titledBoxOptions TitledBoxOptions, position Position) *TitledB
 	}
 }
 
+// Render titled box
 func (tb *TitledBox) Render(doc *fpdf.Fpdf, position Position) error {
 
 	const titleMargin = 1.0
@@ -97,31 +123,15 @@ func (tb *TitledBox) Render(doc *fpdf.Fpdf, position Position) error {
 	return nil
 }
 
+// AddElement add child element to titled box
 func (tb *TitledBox) AddElement(element Element) error {
 	tb.Elements = append(tb.Elements, element)
 	return nil
 }
 
+// ChildElements return text box child elements
 func (tb *TitledBox) ChildElements() []Element {
 	return tb.Elements
-}
-
-// Position ...
-type Position struct {
-	Offset
-	Size
-}
-
-// Offset contains the coordinates of the offset relative to the beginning of the document
-type Offset struct {
-	X float64
-	Y float64
-}
-
-// Size contains the size of rectangle object
-type Size struct {
-	Width  float64
-	Height float64
 }
 
 // RectangleElement composite structure for any rectangle element for
@@ -130,6 +140,7 @@ type RectangleElement struct {
 	Elements            []Element
 }
 
+// Render Rectangle
 func (re *RectangleElement) Render(doc *fpdf.Fpdf, position Position) error {
 
 	position.X += re.X
