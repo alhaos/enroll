@@ -167,3 +167,76 @@ func TestNewImage(t *testing.T) {
 	}
 
 }
+
+func TestNewLabel(t *testing.T) {
+
+	font := Font{
+		Name:  "Arial",
+		Style: "",
+		Size:  8,
+		Color: Color{
+			Red:   0,
+			Green: 0,
+			Blue:  0,
+		},
+	}
+
+	lb := NewLogicalBox(Position{
+		Offset: Offset{0, 0},
+		Size:   Size{210, 997},
+	})
+
+	tb := NewTitledBox(TitledBoxOptions{
+		Title: "Titled box header",
+		Font:  font,
+	}, Position{
+		Offset: Offset{5, 5},
+		Size:   Size{200, 190},
+	})
+
+	err := lb.AddElement(tb)
+	if err != nil {
+		t.Error(err)
+	}
+
+	for i := range 3 {
+		l := NewLabel(font, "Label text", Position{
+			Offset: Offset{
+				X: 2,
+				Y: 2 + float64(i)*(font.Size*pixelToMM+1),
+			},
+			Size: Size{
+				Width:  20,
+				Height: 20,
+			},
+		})
+		err = tb.AddElement(l)
+		if err != nil {
+			t.Error(err)
+		}
+
+	}
+
+	doc := fpdf.New(
+		fpdf.OrientationPortrait,
+		fpdf.UnitMillimeter,
+		fpdf.PageSizeA4,
+		"",
+	)
+
+	doc.AddPage()
+
+	err = lb.Render(doc, Position{
+		Offset: Offset{0, 0},
+		Size:   Size{210, 297},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = doc.OutputFileAndClose("testWithLabel.pdf")
+	if err != nil {
+		t.Error(err)
+	}
+
+}

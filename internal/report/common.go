@@ -32,11 +32,6 @@ func (re *RectangleElement) SetSize(width float64, height float64) {
 // Render Rectangle
 func (re *RectangleElement) Render(doc *fpdf.Fpdf, patentPosition Position) error {
 
-	patentPosition.X += re.Position.X
-	patentPosition.Y += re.Position.Y
-
-	doc.Rect(patentPosition.X, patentPosition.Y, re.Position.Width, re.Position.Height, "D")
-
 	for _, element := range re.Elements {
 		err := element.Render(doc, patentPosition)
 		if err != nil {
@@ -132,26 +127,38 @@ func (tb *TitledBox) Render(doc *fpdf.Fpdf, parentPosition Position) error {
 
 	const titleMargin = 1.0
 
+	f := tb.Options.Font
+
 	doc.SetFont(
-		tb.Options.Font.Name,
-		tb.Options.Font.Style,
-		tb.Options.Font.Size,
+		f.Name,
+		f.Style,
+		f.Size,
 	)
 
+	x := parentPosition.Offset.X + tb.RectangleElement.Position.X
+	y := parentPosition.Offset.Y + tb.Position.Y
+
 	doc.Text(
-		parentPosition.Offset.X+tb.RectangleElement.Position.X+titleMargin,
-		parentPosition.Offset.Y+tb.Position.Y+tb.Options.Font.Size*pixelToMM,
+		x+titleMargin,
+		y+f.Size*pixelToMM,
 		tb.Options.Title,
 	)
 
 	doc.Line(
-		parentPosition.Offset.X+tb.Position.X,
-		parentPosition.Offset.Y+tb.Position.Y+tb.Options.Font.Size*pixelToMM+titleMargin,
-		parentPosition.Offset.X+tb.Position.X+tb.Position.Width,
-		parentPosition.Offset.Y+tb.Position.Y+tb.Options.Font.Size*pixelToMM+titleMargin,
+		x,
+		y+f.Size*pixelToMM+titleMargin,
+		x+tb.Position.Width,
+		y+f.Size*pixelToMM+titleMargin,
 	)
 
-	err := tb.RectangleElement.Render(doc, parentPosition)
+	doc.Rect(x, y, tb.Position.Width, tb.Position.Height, "D")
+
+	p := Position{
+		Offset: Offset{x, y + f.Size*pixelToMM + titleMargin},
+		Size:   tb.Position.Size,
+	}
+
+	err := tb.RectangleElement.Render(doc, p)
 	if err != nil {
 		return err
 	}
@@ -184,14 +191,17 @@ func NewImage(fileName string, position Position) *Image {
 	}
 }
 
+// AddElement dummy method for implement interface element
 func (i *Image) AddElement(Element) error {
-	return errors.New("you can't add child element to Image")
+	return errors.New("you can't add child element in to Image")
 }
 
+// ChildElements dummy method for implement interface element
 func (i *Image) ChildElements() []Element {
 	return nil
 }
 
+// Render image to doc
 func (i *Image) Render(doc *fpdf.Fpdf, parentPosition Position) error {
 
 	_, err := os.Stat(i.filename)
@@ -206,6 +216,50 @@ func (i *Image) Render(doc *fpdf.Fpdf, parentPosition Position) error {
 		i.Position.Size.Width,
 		i.Position.Size.Height,
 		false, "", 0, "",
+	)
+	return nil
+}
+
+// Label element struct
+type Label struct {
+	RectangleElement
+	Font Font
+	Text string
+}
+
+// NewLabel constructor for Label element
+func NewLabel(font Font, text string, position Position) *Label {
+	return &Label{
+		Font: font,
+		Text: text,
+		RectangleElement: RectangleElement{
+			Position: position,
+		},
+	}
+}
+
+// AddElement dummy method from implement interface
+func (l *Label) AddElement(Element) error {
+	return errors.New("you can't add child element in to Label")
+}
+
+// ChildElements dummy element for implement interface
+func (l *Label) ChildElements() []Element {
+	return nil
+}
+
+func (l *Label) Render(doc *fpdf.Fpdf, parentPosition Position) error {
+
+	f := l.Font
+	doc.SetFont(f.Name, f.Style, f.Size)
+
+	c := l.Font.Color
+	doc.SetTextColor(c.Red, c.Green, c.Blue)
+
+	doc.Text(
+		parentPosition.Offset.X+l.Position.Offset.X,
+		parentPosition.Offset.Y+l.Position.Offset.Y+f.Size*pixelToMM,
+		l.Text,
 	)
 	return nil
 }
