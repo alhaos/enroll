@@ -2,6 +2,7 @@ package report
 
 import (
 	"codeberg.org/go-pdf/fpdf"
+	"fmt"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestNew(t *testing.T) {
 	font := Font{
 		Name:  "Arial",
 		Style: "",
-		Size:  8,
+		Size:  18,
 		Color: Color{
 			Red:   0,
 			Green: 0,
@@ -18,7 +19,7 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	report := NewLogicalBox()
+	lb := NewLogicalBox()
 
 	tb1 := NewTitledBox(
 		TitledBoxOptions{
@@ -27,83 +28,44 @@ func TestNew(t *testing.T) {
 		},
 		Position{
 			Offset: Offset{5, 5},
-			Size:   Size{195, 100},
+			Size:   Size{0, 100},
 		},
 	)
 
-	err := report.AddElement(tb1)
-	if err != nil {
-		t.Error(err)
+	totalHeight := 0.0
+	for i := range 4 {
+
+		tb := NewTitledBox(
+			TitledBoxOptions{
+				Title: fmt.Sprintf("Hello world %d", i),
+				Font:  font,
+			},
+			Position{
+				Offset: Offset{5, 5 + float64(i*15)},
+				Size:   Size{100, 10},
+			},
+		)
+
+		err := tb1.AddElement(tb)
+		if err != nil {
+			t.Error(tb)
+		}
+
+		totalHeight += 15
 	}
 
-	tb2 := NewTitledBox(
-		TitledBoxOptions{
-			Title: "Hello world 2",
-			Font:  font,
-		},
-		Position{
-			Offset: Offset{5, 5},
-			Size:   Size{90, 90},
-		},
-	)
+	tb1.SetSize(120, totalHeight+5)
 
-	err = tb1.AddElement(tb2)
-	if err != nil {
-		t.Error(err)
-	}
-
-	tb3 := NewTitledBox(
-		TitledBoxOptions{
-			Title: "Hello world 3",
-			Font:  font,
-		},
-		Position{
-			Offset: Offset{100, 5},
-			Size:   Size{90, 90},
-		},
-	)
-
-	err = tb1.AddElement(tb3)
-	if err != nil {
-		t.Error(err)
-	}
-
-	tb4 := NewTitledBox(
-		TitledBoxOptions{
-			Title: "Hello world 4",
-			Font:  font,
-		},
-		Position{
-			Offset: Offset{5, 5},
-			Size:   Size{50, 50},
-		},
-	)
-
-	err = tb2.AddElement(tb4)
-	if err != nil {
-		t.Error(err)
-	}
-
-	tb5 := NewTitledBox(
-		TitledBoxOptions{
-			Title: "Hello world 5",
-			Font:  font,
-		},
-		Position{
-			Offset: Offset{5, 60},
-			Size:   Size{50, 25},
-		},
-	)
-
-	err = tb2.AddElement(tb5)
+	err := lb.AddElement(tb1)
 	if err != nil {
 		t.Error(err)
 	}
 
 	doc := fpdf.New("P", "mm", "A4", "")
+
 	doc.AddPage()
 
-	err = report.Render(doc, Position{
+	err = lb.Render(doc, Position{
 		Offset: Offset{0, 0},
 		Size:   Size{300, 300},
 	})

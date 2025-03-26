@@ -11,6 +11,7 @@ type Element interface {
 	AddElement(Element) error
 	Render(doc *fpdf.Fpdf, position Position) error
 	ChildElements() []Element
+	SetSize(width float64, height float64)
 }
 
 // Font this structure contains information about font
@@ -104,7 +105,7 @@ func (tb *TitledBox) Render(doc *fpdf.Fpdf, position Position) error {
 	)
 
 	doc.Text(
-		position.Offset.X+tb.X+titleMargin,
+		position.Offset.X+tb.RectangleElement.X+titleMargin,
 		position.Offset.Y+tb.Y+tb.Options.Font.Size*pixelToMM,
 		tb.Options.Title,
 	)
@@ -138,6 +139,12 @@ func (tb *TitledBox) ChildElements() []Element {
 type RectangleElement struct {
 	X, Y, Width, Height float64
 	Elements            []Element
+}
+
+// SetSize set rectangle element size
+func (re *RectangleElement) SetSize(width float64, height float64) {
+	re.Width = width
+	re.Height = height
 }
 
 // Render Rectangle
