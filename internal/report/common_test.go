@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
+func TestCommon(t *testing.T) {
 
 	font := Font{
 		Name:  "Arial",
 		Style: "",
-		Size:  18,
+		Size:  8,
 		Color: Color{
 			Red:   0,
 			Green: 0,
@@ -19,7 +19,12 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	lb := NewLogicalBox()
+	lb := NewLogicalBox(
+		Position{
+			Offset: Offset{10, 10},
+			Size:   Size{277, 250},
+		},
+	)
 
 	tb1 := NewTitledBox(
 		TitledBoxOptions{
@@ -33,7 +38,7 @@ func TestNew(t *testing.T) {
 	)
 
 	totalHeight := 0.0
-	for i := range 4 {
+	for i := range 8 {
 
 		tb := NewTitledBox(
 			TitledBoxOptions{
@@ -41,7 +46,7 @@ func TestNew(t *testing.T) {
 				Font:  font,
 			},
 			Position{
-				Offset: Offset{5, 5 + float64(i*15)},
+				Offset: Offset{5, 5 + float64(i*12)},
 				Size:   Size{100, 10},
 			},
 		)
@@ -51,7 +56,7 @@ func TestNew(t *testing.T) {
 			t.Error(tb)
 		}
 
-		totalHeight += 15
+		totalHeight += 12
 	}
 
 	tb1.SetSize(120, totalHeight+5)
@@ -77,4 +82,88 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestNewImage(t *testing.T) {
+
+	font := Font{
+		Name:  "Arial",
+		Style: "",
+		Size:  8,
+		Color: Color{
+			Red:   0,
+			Green: 0,
+			Blue:  0,
+		},
+	}
+
+	lb := NewLogicalBox(Position{
+		Offset: Offset{0, 0},
+		Size:   Size{210, 997},
+	})
+
+	tb := NewTitledBox(TitledBoxOptions{
+		Title: "Heloo world",
+		Font:  font,
+	}, Position{
+		Offset: Offset{5, 5},
+		Size:   Size{200, 190},
+	})
+
+	err := lb.AddElement(tb)
+	if err != nil {
+		t.Error(err)
+	}
+
+	img := NewImage(
+		`D:\repo\enroll\resourcees\image\Sample-PNG-Image.png`,
+		Position{
+			Offset: Offset{5, 5},
+			Size:   Size{50, 50},
+		},
+	)
+
+	img2 := NewImage(
+		`D:\repo\enroll\resourcees\image\Sample-PNG-Image.png`,
+		Position{
+			Offset: Offset{60, 5},
+			Size:   Size{50, 50},
+		},
+	)
+
+	err = tb.AddElement(img)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = tb.AddElement(img2)
+	if err != nil {
+		t.Error(err)
+	}
+
+	doc := fpdf.New(
+		fpdf.OrientationPortrait,
+		fpdf.UnitMillimeter,
+		fpdf.PageSizeA4,
+		"",
+	)
+
+	doc.AddPage()
+
+	err = lb.Render(
+		doc,
+		Position{
+			Offset: Offset{0, 0},
+			Size:   Size{210, 297},
+		},
+	)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = doc.OutputFileAndClose("testWithImage.pdf")
+	if err != nil {
+		t.Error(err)
+	}
+
 }
