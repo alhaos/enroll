@@ -19,10 +19,16 @@ func TestCommon(t *testing.T) {
 		},
 	}
 
-	lb := NewLogicalBox(
+	b := NewBox(
 		Position{
 			Offset: Offset{10, 10},
 			Size:   Size{277, 250},
+		},
+		"F",
+		Color{
+			200,
+			200,
+			200,
 		},
 	)
 
@@ -61,7 +67,7 @@ func TestCommon(t *testing.T) {
 
 	tb1.SetSize(120, totalHeight+5)
 
-	err := lb.AddElement(tb1)
+	err := b.AddElement(tb1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -70,10 +76,12 @@ func TestCommon(t *testing.T) {
 
 	doc.AddPage()
 
-	err = lb.Render(doc, Position{
-		Offset: Offset{0, 0},
-		Size:   Size{300, 300},
-	})
+	err = b.Render(
+		doc,
+		Position{
+			Offset: Offset{0, 0},
+			Size:   Size{300, 300},
+		})
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,24 +99,42 @@ func TestNewImage(t *testing.T) {
 		Style: "",
 		Size:  8,
 		Color: Color{
-			Red:   0,
-			Green: 0,
-			Blue:  0,
+			Red:   255,
+			Green: 255,
+			Blue:  255,
 		},
 	}
 
-	lb := NewLogicalBox(Position{
-		Offset: Offset{0, 0},
-		Size:   Size{210, 997},
-	})
+	fillColor := Color{
+		Red:   66,
+		Green: 95,
+		Blue:  168,
+	}
 
-	tb := NewTitledBox(TitledBoxOptions{
-		Title: "Heloo world",
-		Font:  font,
-	}, Position{
-		Offset: Offset{5, 5},
-		Size:   Size{200, 190},
-	})
+	lb := NewBox(
+		Position{
+			Offset: Offset{0, 0},
+			Size:   Size{210, 997},
+		},
+		"F",
+		Color{
+			200,
+			200,
+			200,
+		},
+	)
+
+	tb := NewTitledBox(
+		TitledBoxOptions{
+			Title:     "Heloo world",
+			Font:      font,
+			FillColor: fillColor,
+		},
+		Position{
+			Offset: Offset{5, 5},
+			Size:   Size{200, 190},
+		},
+	)
 
 	err := lb.AddElement(tb)
 	if err != nil {
@@ -175,28 +201,49 @@ func TestNewLabel(t *testing.T) {
 		Style: "",
 		Size:  8,
 		Color: Color{
-			Red:   0,
-			Green: 0,
-			Blue:  0,
+			Red:   255,
+			Green: 255,
+			Blue:  255,
 		},
 	}
 
-	lb := NewLogicalBox(Position{
-		Offset: Offset{0, 0},
-		Size:   Size{210, 997},
-	})
+	fillColor := Color{
+		Red:   66,
+		Green: 95,
+		Blue:  168,
+	}
+
+	b := NewBox(
+		Position{
+			Offset: Offset{0, 0},
+			Size:   Size{210, 997},
+		},
+		"F",
+		Color{
+			Red:   200,
+			Green: 200,
+			Blue:  200,
+		},
+	)
 
 	tb := NewTitledBox(TitledBoxOptions{
-		Title: "Titled box header",
-		Font:  font,
+		Title:     "Titled box header",
+		Font:      font,
+		FillColor: fillColor,
 	}, Position{
 		Offset: Offset{5, 5},
 		Size:   Size{200, 190},
 	})
 
-	err := lb.AddElement(tb)
+	err := b.AddElement(tb)
 	if err != nil {
 		t.Error(err)
+	}
+
+	font.Color = Color{
+		Red:   0,
+		Green: 0,
+		Blue:  0,
 	}
 
 	for i := range 3 {
@@ -226,7 +273,7 @@ func TestNewLabel(t *testing.T) {
 
 	doc.AddPage()
 
-	err = lb.Render(doc, Position{
+	err = b.Render(doc, Position{
 		Offset: Offset{0, 0},
 		Size:   Size{210, 297},
 	})

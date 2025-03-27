@@ -75,35 +75,66 @@ type Size struct {
 	Height float64
 }
 
-// LogicalBox struct
-type LogicalBox struct {
+// Box struct
+type Box struct {
 	RectangleElement
+	FillStyle string
+	FillColor Color
 }
 
-// NewLogicalBox constructor from logical box
-func NewLogicalBox(position Position) *LogicalBox {
-	return &LogicalBox{
+// NewBox constructor from logical box
+func NewBox(position Position, fillStyle string, fillColor Color) *Box {
+	return &Box{
 		RectangleElement{
 			Position: position,
 		},
+		fillStyle,
+		fillColor,
 	}
 }
 
 // AddElement add child element to logical box
-func (br *LogicalBox) AddElement(element Element) error {
-	br.Elements = append(br.Elements, element)
+func (b *Box) AddElement(element Element) error {
+	b.Elements = append(b.Elements, element)
 	return nil
 }
 
 // ChildElements return child elements
-func (br *LogicalBox) ChildElements() []Element {
-	return br.Elements
+func (b *Box) ChildElements() []Element {
+	return b.Elements
+}
+
+func (b *Box) Render(doc *fpdf.Fpdf, parentPosition Position) error {
+
+	x := parentPosition.Offset.X + b.Position.Offset.X
+	y := parentPosition.Offset.Y + b.Position.Offset.Y
+
+	doc.SetFillColor(b.FillColor.Red, b.FillColor.Green, b.FillColor.Blue)
+
+	doc.Rect(
+		x,
+		y,
+		b.Position.Width,
+		b.Position.Height,
+		b.FillStyle,
+	)
+
+	parentPosition.Offset.X = x
+	parentPosition.Offset.Y = y
+
+	err := b.RectangleElement.Render(doc, parentPosition)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // TitledBoxOptions ...
 type TitledBoxOptions struct {
-	Title string
-	Font  Font
+	Title     string
+	Font      Font
+	FillColor Color
 }
 
 // TitledBox struct
@@ -138,20 +169,22 @@ func (tb *TitledBox) Render(doc *fpdf.Fpdf, parentPosition Position) error {
 	x := parentPosition.Offset.X + tb.RectangleElement.Position.X
 	y := parentPosition.Offset.Y + tb.Position.Y
 
+	fc := tb.Options.FillColor
+
+	doc.SetFillColor(fc.Red, fc.Green, fc.Blue)
+	doc.SetDrawColor(fc.Red, fc.Green, fc.Blue)
+
+	doc.Rect(x, y, tb.Position.Width, f.Size*pixelToMM+titleMargin*1, "F")
+
+	doc.Rect(x, y, tb.Position.Width, tb.Position.Height, "D")
+
+	doc.SetTextColor(f.Color.Red, f.Color.Green, f.Color.Blue)
+
 	doc.Text(
 		x+titleMargin,
 		y+f.Size*pixelToMM,
 		tb.Options.Title,
 	)
-
-	doc.Line(
-		x,
-		y+f.Size*pixelToMM+titleMargin,
-		x+tb.Position.Width,
-		y+f.Size*pixelToMM+titleMargin,
-	)
-
-	doc.Rect(x, y, tb.Position.Width, tb.Position.Height, "D")
 
 	p := Position{
 		Offset: Offset{x, y + f.Size*pixelToMM + titleMargin},
